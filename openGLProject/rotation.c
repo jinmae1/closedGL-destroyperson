@@ -13,6 +13,7 @@ float x, y, z;
 float radius;
 float theta;
 float phi;
+float zoom = 60.0;
 
 int beforeX, beforeY;
 
@@ -65,11 +66,12 @@ void init (void)
 
 void reshape (int w, int h)
 {
+    printf("reshape\n");
     glViewport(0, 0, w, h);
     glMatrixMode (GL_PROJECTION);
     glLoadIdentity();
     //glOrtho (-5.0, 5.0, -5.0, 5.0, -5.0, 5.0);
-    gluPerspective(60.0, 1.0, 1.0, 100.0);  // 멀고 가까움을 표현.
+    gluPerspective(zoom, 1.0, 1.0, 100.0);  // 멀고 가까움을 표현.
     
     radius = 10.0;
     theta = 10.0;
@@ -77,6 +79,13 @@ void reshape (int w, int h)
 }
 void display (void)
 {
+    printf("display\n");
+    
+    // for zoom
+    glMatrixMode (GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(zoom, 1.0, 1.0, 100.0);  // 멀고 가까움을 표현.
+    
     x = radius * cos(phi) * cos(theta);
     y = radius * cos(phi) * sin(theta);
     z = radius * sin(phi);
@@ -108,30 +117,18 @@ void display (void)
     glutSwapBuffers();
 }
 
-void specialKey(int key, int x, int y)
+void specialKey(int key, int xx, int yy)
 {
     switch(key)
     {
-        case GLUT_KEY_LEFT:
-            theta -= 0.1;
+        case 'a':
+            zoom--;
             break;
-        case GLUT_KEY_RIGHT:
-            theta += 0.1;
-            break;
-        case GLUT_KEY_UP:
-            phi += 0.1;
-            break;
-        case GLUT_KEY_DOWN:
-            phi -= 0.1;
+        case 'z':
+            zoom++;
             break;
     }
     
-    glutPostRedisplay();
-    
-    if ( theta > 2.0 * PI ) // 360도 넘어가면
-        theta -= (2.0 * PI);
-    else if ( theta < 0.0 )
-        theta += (2.0 * PI);
 }
 
 void processMouse(int button, int state, int x, int y)
@@ -161,9 +158,9 @@ void processMouseMotion(int x, int y)
             theta += 0.1;
         }
     }else {
-        if(beforeY < y){
+        if(beforeY > y){
             phi -= 0.1;
-        }else if(beforeY > y){
+        }else if(beforeY < y){
             phi -= 0.1;
         }
     }
@@ -191,7 +188,7 @@ void main (int argc, char** argv)
     glutReshapeFunc (reshape);
     glutMouseFunc(processMouse);
     glutMotionFunc(processMouseMotion);
-    //glutSpecialFunc(specialKey);
+    glutSpecialFunc(specialKey);
     glutIdleFunc(display);
     glutMainLoop();
 }
